@@ -13,8 +13,8 @@ function reste = moduloG(mx,t,d)
             registre(4) = c;
             registre(5) = d_val;
         end
-        L = zeros(1,26);
-        reste = [L, registre];
+        
+        reste = registre;
     end
 
     if (t == 2 && d == 0)
@@ -33,8 +33,7 @@ function reste = moduloG(mx,t,d)
             registre2(9) = mod(toggle(8) + toggle(10),2);
             registre2(10) = mod(toggle(9) + toggle(10),2);
         end
-        L = zeros(1,21);
-        reste = [L, registre2];
+        reste = registre2;
     end
 
     if (d == 1 && t == 1)

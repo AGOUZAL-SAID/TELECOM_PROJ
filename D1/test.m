@@ -2,6 +2,6 @@ mx = [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 code = BCH(mx,1);
 decode = ML(code ,1);
 
-if(isequal(code(1:26),decode))
+if(isequal(code(6:31),decode))
     disp("bonne codage");
 end

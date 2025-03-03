@@ -5,9 +5,9 @@ function decision = ML(Cx, t)
     if isequal(registre, zeros(1, 5*(t == 1) + 10*(t == 2))) % Adapté à la taille du registre
         % Aucune erreur détectée
         if t == 1
-            decision = Cx(1:26);
+            decision = Cx(6:31);
         elseif t == 2
-            decision = Cx(1:21);
+            decision = Cx(11:31);
         end
     else
         state = 0;
@@ -21,7 +21,7 @@ function decision = ML(Cx, t)
                 if isequal(registre, e)
                     decision = code;
                     decision(i) = mod(code(i) + 1, 2);
-                    decision = decision(1:26); % Message de 26 bits
+                    decision = decision(6:31); % Message de 26 bits
                     state = 1;
                     break;
                 end
@@ -37,7 +37,7 @@ function decision = ML(Cx, t)
                 if isequal(registre, e)
                     decision = code;
                     decision(i) = mod(code(i) + 1, 2);
-                    decision = decision(1:21); % Message de 21 bits
+                    decision = decision(11:31); % Message de 21 bits
                     state = 1;
                     break;
                 end
@@ -51,7 +51,7 @@ function decision = ML(Cx, t)
                         decision = code;
                         decision(i) = mod(code(i) + 1, 2);
                         decision(j) = mod(code(j) + 1, 2);
-                        decision = decision(1:21); % Message de 21 bits
+                        decision = decision(11:31); % Message de 21 bits
                         state = 1;
                         break;
                     end
@@ -65,9 +65,9 @@ function decision = ML(Cx, t)
         % Si aucune erreur n'a été corrigée
         if state == 0
             if t == 1
-                decision = Cx(1:26); % Retourne le message brut (non corrigé)
+                decision = Cx(6:31); % Retourne le message brut (non corrigé)
             elseif t == 2
-                decision = Cx(1:21); % Correction cohérente avec t=2
+                decision = Cx(11:31); % Correction cohérente avec t=2
             end
         end
     end
