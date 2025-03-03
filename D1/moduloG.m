@@ -1,7 +1,8 @@
 function reste = moduloG(mx,t,d)
-    if (t == 1 && d == 0)
+    if (t == 1)
         registre = [0,0,0,0,0];
-        for i = 1:26
+        mx = [[0,0,0,0,0],mx]
+        for i = 1:31
             a = registre(1);
             b = registre(2);
             c = registre(3);
@@ -17,10 +18,11 @@ function reste = moduloG(mx,t,d)
         reste = registre;
     end
 
-    if (t == 2 && d == 0)
+    if (t == 2)
+        mx = [zeros(1,10),mx] ;
         registre2 = zeros(1,10);
         toggle = zeros(1,10);
-        for i = 1:21
+        for i = 1:31
             toggle = registre2;
             registre2(1) = mod(toggle(10) + mx(i),2);
             registre2(2) = toggle(2);

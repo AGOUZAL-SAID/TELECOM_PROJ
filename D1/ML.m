@@ -20,8 +20,10 @@ function decision = ML(Cx, t)
                 e = moduloG(L, 1, 1);
                 if isequal(registre, e)
                     decision = code;
-                    decision(i) = mod(code(i) + 1, 2);
+                    decision(i) = mod(decision(i) + 1, 2);
                     decision = decision(6:31); % Message de 26 bits
+                    disp("une erreur corrigé")
+                    disp(i);
                     state = 1;
                     break;
                 end
@@ -38,6 +40,7 @@ function decision = ML(Cx, t)
                     decision = code;
                     decision(i) = mod(code(i) + 1, 2);
                     decision = decision(11:31); % Message de 21 bits
+                    disp("une erreur corriger !")
                     state = 1;
                     break;
                 end
@@ -52,6 +55,7 @@ function decision = ML(Cx, t)
                         decision(i) = mod(code(i) + 1, 2);
                         decision(j) = mod(code(j) + 1, 2);
                         decision = decision(11:31); % Message de 21 bits
+                        disp(" 2 erreurs corriger !")
                         state = 1;
                         break;
                     end
