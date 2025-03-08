@@ -72,13 +72,76 @@ end
 % conversion en dB du SNR
 SNR_dB = 10 * log10(SNR(1:end));
 
+% listes de gain empirique calculer
+    GAIN_1 =[]; 
+    GAIN_2 = [];
 
-% Ajout du tracé des courbes BER en fonction du SNR
+
+    % listes de BER pour ce gain 
+    BER_GAIN_1 = [];
+    BER_GAIN_2 = [];
+    
+    % calcul de gain empirique pour BCH 1 
+    for i = 1:Nc
+        for j = 1:Nc
+            if (BER_1(i) <= BER_0(j)+1 && BER_1(i) >= BER_0(j)-1 && BER_0(j) < 40)
+                GAIN_1 = [GAIN_1,SNR_dB(i)-SNR_dB(j)];
+                BER_GAIN_1 = [BER_GAIN_1,BER_0(j)];
+            end
+        end
+    end
+    
+    % calcul de gain empirique pour BCH 1 
+    for i = 1:Nc
+        for j = 1:Nc
+            if (BER_2(i) <= BER_0(j)+1 && BER_2(i) >= BER_0(j)-1 && BER_0(j) < 40 )
+                GAIN_2 = [GAIN_2,SNR_dB(i)-SNR_dB(j)];
+                BER_GAIN_2 = [BER_GAIN_2,BER_0(j)];
+            end
+        end
+    end
+        
+    
+    % le gain empirique theorique
+    GAIN_1_Theo = (26/31)*3;
+    GAIN_2_Theo = (21/31)*7;
+
+    
+    
 figure;
+subplot(2,1,1); 
 plot(SNR_dB, BER_0, 'bo-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le non codé
 hold on;
 plot(SNR_dB, BER_1, 'r*-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le code BCH_1
 plot(SNR_dB, BER_2, 'gs-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le code BCH_2
+xlabel('SNR (dB)');
+ylabel('BER');
+title('Comparaison des performances BER en fonction du SNR');
+legend('Non codé', 'BCH_1', 'BCH_2');
+grid on;
+hold off;
+
+% Trac des gains empiriques en fonction du BER_gain dans la deuxieme sous-figure
+subplot(2,1,2);
+plot(BER_GAIN_1, GAIN_1, 'r*-', 'LineWidth', 2, 'MarkerSize', 8); % Gain empirique pour BCH_1
+hold on;
+plot(BER_GAIN_2, GAIN_2, 'gs-', 'LineWidth', 2, 'MarkerSize', 8); % Gain empirique pour BCH_2
+yline(GAIN_1_Theo, 'r--', 'LineWidth', 2); % Ligne horizontale pour GAIN_1_Theo
+yline(GAIN_2_Theo, 'g--', 'LineWidth', 2); % Ligne horizontale pour GAIN_2_Theo
+xlabel('BER');
+ylabel('Gain Empirique (dB)');
+title('Gain Empirique en fonction du BER');
+legend('BCH_1 (Empirique)', 'BCH_2 (Empirique)','BCH_1 (theorique)', 'BCH_2 (theorique)');
+grid on;
+hold off;
+
+
+% Ajout du tracé des courbes BER en fonction du SNR lisser
+figure;
+plot(SNR_dB, smooth(BER_0), 'bo-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le non codé
+hold on;
+plot(SNR_dB, smooth(BER_1), 'r*-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le code BCH_1
+plot(SNR_dB,  smooth(BER_2), 'gs-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le code BCH_2
 
 % Ajout des légendes et titres
 xlabel('SNR (dB)');

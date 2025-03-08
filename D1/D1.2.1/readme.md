@@ -89,3 +89,4 @@ The system performance can be evaluated by analyzing the BER vs SNR curves:
 
 ## Dependencies
 - MATLAB (tested on MATLAB R2024b or later)
+- Curve filtring Toolbox
