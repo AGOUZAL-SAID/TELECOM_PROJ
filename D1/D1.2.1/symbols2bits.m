@@ -54,6 +54,7 @@ if (mod=='PSK')
     
     
     % sorting Gray code elements to form the lookup table
+    
     opDec = ind(c+1)-1;
     V=dec2bin([opDec,M-1]);
     U=V([1:length(s)] ,:);
