@@ -1,7 +1,10 @@
 
-% temps d'excution est 1 minute et 36 seconds
+% temps d'excution est  27 seconds x)
 
 %%
+
+% generation et stockage des syndromes
+[synd_1,synd_2_1,synd_2_2] = initialisation_synd() ;
 
 % generation des signaux aleatoir + modulation(BPSK) des ces signaux dans fonction modulaion
 N = 100; % nombre de sequneces envoyer 
@@ -38,7 +41,7 @@ for i = 1:size(bits_1,1)
     entre = bits_1(i,:);
     BCH_1 = reshape(entre, 31, N)';
     for j = 1:N
-        decode = ML (BCH_1(j,:),1); % decode de code recus d'apres le canal
+        decode = ML2 (BCH_1(j,:),1,synd_1,synd_2_1,synd_2_2); % decode de code recus d'apres le canal
         temp = BER(decode,M_1(j,:)); % calacule de BER pour chaque canal
         sum_1 = sum_1 + temp ;
     end
@@ -52,7 +55,7 @@ for i = 1:size(bits_2,1)
     entre = bits_2(i,:)
     BCH_2 = reshape(entre, 31, N)';
     for j = 1:N
-        decode = ML (BCH_2(j,:),2); % decode de code recus d'apres le canal
+        decode = ML2 (BCH_2(j,:),2,synd_1,synd_2_1,synd_2_2); % decode de code recus d'apres le canal
         temp = BER(decode,M_2(j,:)); % calacule de BER pour chaque canal
         sum_2 = sum_2 + temp ;
     end

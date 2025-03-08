@@ -1,6 +1,6 @@
 function decision = ML(Cx, t)
     code = Cx;
-    registre = moduloG(Cx, t, 1);
+    registre = moduloG(Cx, t);
     
     if isequal(registre, zeros(1, 5*(t == 1) + 10*(t == 2))) % Adapté à la taille du registre
         % Aucune erreur détectée
@@ -19,7 +19,7 @@ function decision = ML(Cx, t)
             for i = 1:31
                 L = zeros(1, 31);
                 L(i) = 1;
-                e = moduloG(L, 1, 1);
+                e = moduloG(L, 1);
                 if isequal(registre, e)
                     decision = code;
                     decision(i) = mod(code(i) + 1, 2);
@@ -37,7 +37,7 @@ function decision = ML(Cx, t)
                 % Test des erreurs simples
                 L = zeros(1, 31);
                 L(i) = 1;
-                e = moduloG(L, 2, 1);
+                e = moduloG(L, 2);
                 if isequal(registre, e)
                     decision = code;
                     decision(i) = mod(code(i) + 1, 2);
@@ -52,7 +52,7 @@ function decision = ML(Cx, t)
                 for j = (i + 1):31
                     L2 = zeros(1, 31);
                     L2([i, j]) = 1;
-                    e = moduloG(L2, 2, 1);
+                    e = moduloG(L2, 2);
                     if isequal(registre, e)
                         decision = code;
                         decision(i) = mod(code(i) + 1, 2);
@@ -74,9 +74,9 @@ function decision = ML(Cx, t)
         % Si aucune erreur n'a été corrigée
         if state == 0
             if t == 1
-                decision = zeros(1,26); % Retourne le message brut (non corrigé)
+                decision = Cx(1:26); % Retourne le message brut (non corrigé)
             elseif t == 2
-                decision = zeros(1,21); % Correction cohérente avec t=2
+                decision = Cx(1:21); % Correction cohérente avec t=2
             end
         end
     end
