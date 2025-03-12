@@ -1,6 +1,7 @@
-function [S_0,S_1,S_2,M_0,M_1,M_2] = modulation(N)
+function [S_0,S_1,S_2,M_0,M_1,M_2] = modulation(n,mod,M)
 % N nombre des séquences 
-
+m = log2(M);
+N = fix(n/m)*m;
 % sequence des bits non codé
 M_0   = randi([0 1],1,N*31); 
 M_1   = randi([0 1],N,26);   
@@ -27,10 +28,10 @@ for i = 1:N
 end
 
 % calcule de symboles non codé
-S_0 = bits2symbols(M_0,"PSK",2);
+S_0 = bits2symbols(M_0,mod,M);
 
 % calcule de symboles BCH une erreur
-S_1 = bits2symbols(BCH_1,"PSK",2);
+S_1 = bits2symbols(BCH_1,mod,M);
 
 % calcule de symboles BCH deux erreurs
-S_2 = bits2symbols(BCH_2,"PSK",2);
+S_2 = bits2symbols(BCH_2,mod,M);

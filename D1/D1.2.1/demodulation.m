@@ -1,15 +1,14 @@
-function bits = demodulation(z,Nc)
-% Nc nombre des canaux
-% z mots recus
-bits = zeros(Nc,length(z));
-for i = 1:Nc 
-    s = z(i, :);  % On récupère la ième ligne et on la transpose
-
-    % Normalisation correcte pour éviter les erreurs dans symbols2bits
-    s = cos(mod(angle(s), 2*pi)) + i*sin(mod(angle(s), 2*pi));
-
+function bits = demodulation(z,Nc,mod,M)
+% Nc : nombre des canaux
+% z  : mots recus
+% mod : type de modulation 
+% M  : taille constellation
+m = log2(M);
+bits = zeros(Nc,size(z,2)*m);
+for j = 1:Nc 
+    s = threshold_detector(z(j, :),mod,M);  % detection de symbole le plus proche
     % Conversion en bits
-    bits(i, :) = symbols2bits(s, 'PSK', 2);
+    bits(j, :) = symbols2bits(s, mod, M);
 
 end
 end

@@ -49,9 +49,8 @@ if (mod=='PSK')
     [tt ind] = sort(opGray);
     
     % PAM renormalization
-    c=M*angle(s/sqrt(log2(M)))/(2*pi);
+    c=round(M*angle(s/sqrt(log2(M)))/(2*pi));
     c=round(c-M*floor(c/M));
-    
     
     % sorting Gray code elements to form the lookup table
     
@@ -82,8 +81,10 @@ if(mod=='QAM')
     sRe=real(s);
     sIm=imag(s);
     
-    cRe=(sRe+mm-1)/2;
-    cIm=(sIm+mm-1)/2;
+    cRe=round((sRe+mm-1)/2);
+    cIm=round((sIm+mm-1)/2);
+
+    
     
     % sorting Gray code elements to form the lookup table
     opDecRe = ind(cRe+1)-1;
