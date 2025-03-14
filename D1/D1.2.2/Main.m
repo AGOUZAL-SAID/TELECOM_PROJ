@@ -8,7 +8,7 @@ A_3 = [1, 0.8, 0.8, 0.8, 0.8]; % Atténuations du canal 3
 Ts = 0.05e-6; % Période d'échantillonnage
 L = 4; % Longueur du canal
 m = -L:1:L; 
-N = 1000; % Longueur de trame
+N = 1000; % 10 trames de Longueur 100
 
 % Création des réponses impulsionnelles du canal
 h1 = filtre_canal(m, A_1, tau, Ts, L);
