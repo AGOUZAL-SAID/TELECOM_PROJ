@@ -1,22 +1,21 @@
 function [BER] = DFE(bits_emis, z, H, mod, M)
-    [Q, R] = qr(H); 
-    
-    z_eq = ctranspose(Q) * z; 
-    s_recu = zeros(size(z_eq)); 
+    [Q, R] = qr(H);  % Décomposition QR
+    z_eq = ctranspose(Q) * z;  % Signal reçu après égalisation
+
+    N = length(R);
+    s_est = zeros(1, N);  % Préallocation des décisions
     
     % Boucle de détection avec rétroaction
-    for j = 1:length(z_eq)
-        % Détection du symbole actuel
-        s_recu(j) = threshold_detector(z_eq(j), mod, M);
-        
-        % Correction des symboles suivants avec rétroaction
-        if j < length(z_eq)
-            z_eq(j+1:end) = z_eq(j+1:end) - R(j+1:length(z_eq), j) * s_recu(j);
+    for n = N:-1:1
+        temp = z_eq(n);
+        for m = 1:N-n
+            temp = temp - R(n, n+m) * s_est(n+m);
         end
+        s_est(n) = threshold_detector(temp / R(n, n), mod, M);
     end
-
+    
     % Décodage des bits
-    bits_recu = symbols2bits(s_recu, mod, M);
+    bits_recu = symbols2bits(s_est, mod, M);
     
     % Calcul du BER
     BER = sum(bits_emis ~= bits_recu) / length(bits_emis);

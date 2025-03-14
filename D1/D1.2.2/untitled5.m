@@ -8,7 +8,8 @@ A_3 = [1,0.8,0.8,0.8,0.8];
 Ts = 0.05e-6;
 L = 4;
 m = -L:1:L;
-N = 1000;
+N = 100;
+Nc = 100 ; %Nb de caneaux
 
 % Generate and normalize channel impulse responses
 h1 = filtre_canal(m, A_1, tau, Ts, L);
@@ -61,9 +62,9 @@ for mod_idx = 1:length(modulations)
     
     % Define SNR range
     if M == 2
-        SNR_dB = 0:2:20; % BPSK
+        SNR_dB = linspace(0,20,Nc); % BPSK
     else
-        SNR_dB = 0:2:30; % QAM
+        SNR_dB = linspace(0,30,Nc); % QAM
     end
     SNR = 10.^(SNR_dB/10); % Convert to linear scale
 
@@ -110,9 +111,9 @@ for mod_idx = 1:length(modulations)
     markers = {'o', 's', '^'};
 
     for c = 1:3
-        semilogy(SNR_dB, BER_Threshold(c, :), [colors{c}, '--', markers{1}], 'LineWidth', 1.5); hold on;
-        semilogy(SNR_dB, BER_ZFE(c, :), [colors{c}, '-', markers{2}], 'LineWidth', 1.5);
-        semilogy(SNR_dB, BER_DFE(c, :), [colors{c}, '-.', markers{3}], 'LineWidth', 1.5);
+        semilogy(SNR_dB, smooth(BER_Threshold(c, :)), [colors{c}, '--', markers{1}], 'LineWidth', 1.5); hold on;
+        semilogy(SNR_dB, smooth(BER_ZFE(c, :)), [colors{c}, '-', markers{2}], 'LineWidth', 1.5);
+        semilogy(SNR_dB, smooth(BER_DFE(c, :)), [colors{c}, '-.', markers{3}], 'LineWidth', 1.5);
     end
 
     xlabel('E_b/N_0 (dB)'); ylabel('BER');
