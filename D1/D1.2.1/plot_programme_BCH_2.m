@@ -8,13 +8,14 @@
     
     % generation des signaux aleatoir + modulation(BPSK) des ces signaux dans fonction modulaion
 
-    N = 100; % nombre de sequneces envoyer 
+    N = 1000; % nombre de sequneces envoyer 
     Nc = 1000; % nombre des canaux des les quelles les signaux sont passer par
     min_N0 = 0.1; % le point de commencement de N0
-    mod = 'QAM'; % type de modulation
-    M   = 16; % taille de constellation
+    mod = 'PSK'; % type de modulation
+    M   = 2; % taille de constellation
     m   = log2(M); % nombre de bits dans 1 symbole
     canal = 0;
+
     
     [S_0,S_1,S_2,M_0,M_1,M_2]=modulation(N,mod,M);
     
@@ -104,8 +105,8 @@
     % calcul de gain empirique pour BCH 1 
     for i = 1:Nc
         for j = 1:Nc
-            if (BER_1(i) <= BER_0(j)+0.005 && BER_1(i) >= BER_0(j)-0.005 && BER_0(j) < 20)
-                GAIN_1 = [GAIN_1,SNR_dB_0(i)-SNR_dB_1(j)];
+            if (BER_1(i) <= BER_0(j)+(5/Nc) && BER_1(i) >= BER_0(j)-(5/Nc) && BER_0(j) < 1)
+                GAIN_1 = [GAIN_1,SNR_dB_1(i)-SNR_dB_0(j)];
                 BER_GAIN_1 = [BER_GAIN_1,BER_0(j)];
             end
         end
@@ -114,14 +115,27 @@
     % calcul de gain empirique pour BCH 1 
     for i = 1:Nc
         for j = 1:Nc
-            if (BER_2(i) <= BER_0(j)+0.05 && BER_2(i) >= BER_0(j)-0.05 && BER_0(j) < 20 )
-                GAIN_2 = [GAIN_2,SNR_dB_0(i)-SNR_dB_2(j)];
+            if (BER_2(i) <= BER_0(j)+(5/Nc) && BER_2(i) >= BER_0(j)-(5/Nc) && BER_0(j) < 1 )
+                GAIN_2 = [GAIN_2,SNR_dB_2(i)-SNR_dB_0(j)];
                 BER_GAIN_2 = [BER_GAIN_2,BER_0(j)];
             end
         end
     end
         
+    [BER_GAIN_1, idx] = sort(BER_GAIN_1);
+    GAIN_1 = GAIN_1(idx);
+
+    % 2. Extraire les valeurs uniques en conservant la première occurrence
+    [BER_GAIN_1, idx_unique] = unique(BER_GAIN_1, 'stable');
+    GAIN_1 = GAIN_1(idx_unique)
     
+    [BER_GAIN_2, idx] = sort(BER_GAIN_2);
+    GAIN_2 = GAIN_2(idx);
+
+    % 2. Extraire les valeurs uniques en conservant la première occurrence
+    [BER_GAIN_2, idx_unique] = unique(BER_GAIN_2, 'stable');
+    GAIN_2 = GAIN_2(idx_unique)
+
     % le gain empirique theorique
     GAIN_1_Theo = 10*log10((26/31)*2);
     GAIN_2_Theo = 10*log10((21/31)*3);
@@ -141,9 +155,9 @@
     
     % Tracage des gains empiriques en fonction du BER_gain dans la deuxieme sous-figure
     figure;
-    plot(BER_GAIN_1(end:-1:1), smooth(GAIN_1), 'r*-', 'LineWidth', 2, 'MarkerSize', 8); % Gain empirique pour BCH_1
+    plot(BER_GAIN_1, smooth(GAIN_1), 'r*-', 'LineWidth', 2, 'MarkerSize', 8); % Gain empirique pour BCH_1
     hold on;
-    plot(BER_GAIN_2(end:-1:1), smooth(GAIN_2), 'gs-', 'LineWidth', 2, 'MarkerSize', 8); % Gain empirique pour BCH_2
+    plot(BER_GAIN_2, smooth(GAIN_2), 'gs-', 'LineWidth', 2, 'MarkerSize', 8); % Gain empirique pour BCH_2
     yline(GAIN_1_Theo, 'r--', 'LineWidth', 2); % Ligne horizontale pour GAIN_1_Theo
     yline(GAIN_2_Theo, 'g--', 'LineWidth', 2); % Ligne horizontale pour GAIN_2_Theo
     xlabel('BER %');
