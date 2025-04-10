@@ -32,7 +32,7 @@ BCH codes are a class of cyclic error-correcting codes that can detect and corre
 - `demodulation.m`: Demodulates received signals
 
 ### Channel Simulation
-- `canal.m`: Simulates Gaussian noise channel with configurable noise levels
+- `selective_canal.m`: Simulates Gaussian noise channel : 0 & selective channel 1,2 & 3 
 
 ### Performance Evaluation
 - `BER.m`: Calculates Bit Error Rate between transmitted and received data
@@ -53,8 +53,8 @@ BCH codes are a class of cyclic error-correcting codes that can detect and corre
    - `plot_programme_BCH_2.m`: Faster simulation using pre-computed syndromes
 
 3. **Configure Parameters**:
-   - `N`: Number of message sequences (default: 100)
-   - `Nc`: Number of channel noise levels to test (default: 100)
+   - `N`: Number of message sequences (default: 1000)
+   - `Nc`: Number of channel noise levels to test (default: 1000)
 
 ## Results Interpretation
 
@@ -89,4 +89,4 @@ The system performance can be evaluated by analyzing the BER vs SNR curves:
 
 ## Dependencies
 - MATLAB (tested on MATLAB R2024b or later)
-- Curve filtring Toolbox
+- Curve filtring Toolbox for the function "smooth()"
