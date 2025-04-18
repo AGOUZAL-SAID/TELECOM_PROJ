@@ -331,7 +331,7 @@ basebandAnalog_filtrx_Q = basebandAnalogFiltFake(basebandAnalog_raw_Q,RXBB_Filt,
 
 %%% Baseband Gain %%%
 BBamp_Gain    = 19.03; % (dB)
-BBamp_IIP3    = 0; % (dBm)
+BBamp_IIP3    = 40; % (dBm)
 BBamp_NF      = 10; % (dB)
 BBamp_band    = 10e6;% (MHz)
 basebandAnalog_amp_I = BBamp(basebandAnalog_filtrx_I,BBamp_Gain,BBamp_NF,BBamp_IIP3,Rin,BBamp_band,continuousTimeSamplingRate);
@@ -347,9 +347,10 @@ disp(['tension max_i : ',num2str(Vmax_i),'tension max_q :',num2str(Vmax_q)])
 nBitADC = 13;
 delay   = 0;%round(TXBB_Filt_n/2 + RXBB_Filt_n/2 + 1/(2*continuousTimeSamplingRate)); % WARNING : non trivial value !!! to be thoroughly analyzed
 adcSamplingRate = basebandSamplingRate;
+Vref_ADC = 1;
 % Perform conversion
-basebandAnalog_adc_I = ADC(basebandAnalog_amp_I,nBitADC,Vref,adcSamplingRate,delay,continuousTimeSamplingRate);
-basebandAnalog_adc_Q = ADC(basebandAnalog_amp_Q,nBitADC,Vref,adcSamplingRate,delay,continuousTimeSamplingRate);
+basebandAnalog_adc_I = ADC(basebandAnalog_amp_I,nBitADC,Vref_ADC = 1;,adcSamplingRate,delay,continuousTimeSamplingRate);
+basebandAnalog_adc_Q = ADC(basebandAnalog_amp_Q,nBitADC,Vref_ADC = 1;,adcSamplingRate,delay,continuousTimeSamplingRate);
 %%% IQ combination for complex baseband signals %%%
 basebandComplexDigital                = complex(basebandAnalog_adc_I,basebandAnalog_adc_Q);
 
