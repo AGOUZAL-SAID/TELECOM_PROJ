@@ -351,8 +351,8 @@ nBitADC = 13;
 delay   = 0;%round(TXBB_Filt_n/2 + RXBB_Filt_n/2 + 1/(2*continuousTimeSamplingRate)); % WARNING : non trivial value !!! to be thoroughly analyzed
 adcSamplingRate = basebandSamplingRate;
 % Perform conversion
-basebandAnalog_adc_I = ADC(basebandAnalog_amp_I,nBitADC,Vref_ADC_ADC,adcSamplingRate,delay,continuousTimeSamplingRate);
-basebandAnalog_adc_Q = ADC(basebandAnalog_amp_Q,nBitADC,Vref_ADC_ADC,adcSamplingRate,delay,continuousTimeSamplingRate);
+basebandAnalog_adc_I = ADC(basebandAnalog_amp_I,nBitADC,Vref_ADC,adcSamplingRate,delay,continuousTimeSamplingRate);
+basebandAnalog_adc_Q = ADC(basebandAnalog_amp_Q,nBitADC,Vref_ADC,adcSamplingRate,delay,continuousTimeSamplingRate);
 %%% IQ combination for complex baseband signals %%%
 basebandComplexDigital                = complex(basebandAnalog_adc_I,basebandAnalog_adc_Q);
 
