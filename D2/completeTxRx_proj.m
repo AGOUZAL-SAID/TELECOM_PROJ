@@ -81,6 +81,7 @@ basebandRRC = rcosdesign(rollOff,symbolSpan,basebandOverSampling,'sqrt');
 %%%%%                               'onetone' for a one-tone sine 
 %%%%%                               'twotone' for a two-tone sine 
 %%%%%                               'mod'     for a modulated QAM 16 signal
+%%%%%                               'image'   for a modulated QAM 16 image
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                              
 
 test_type='image';
@@ -96,6 +97,7 @@ switch test_type
       modSize       = 16; % Modulation order for 16QAM
       nQAMSymbols   = round(NSamples_BB/basebandOverSampling); % Number of QAM symbols to be generated
       inSig         = randi([0 modSize-1],nQAMSymbols,1);      % generate symbols as integer
+
       % Perform modulation : convert integer symbols to complex symbols
       if isOctave
          qamSig        = qammod(inSig,modSize);
@@ -103,52 +105,49 @@ switch test_type
       else % Matlab
          qamSig        = qammod(inSig,modSize,'UnitAveragePower',true);
       end
-    
-        
-
 
       % Apply filter with upsampling to basebandSamplingRate 
       basebandSig   = resample(qamSig,basebandOverSampling,1,basebandRRC);
       % Resample (compared to upfirdn) generates a signal that is exactly the 
       % length we can predict without having to compensate for the delay introduced by the filter
       % https://groups.google.com/d/msg/comp.soft-sys.matlab/UGLNR9vFqhM/c56ZlfUlhhcJ
-    case 'image'
-    % Load and prepare the image
-    img = imread('image.jpg'); % Load image (adjust path as needed)
-    img = imresize(img, [63 63]);   % Resize to reduce data size
-    img_gray = rgb2gray(img);       % Convert to grayscale if necessary
-    img_vector = img_gray(:);       % Flatten to a column vector
-    
-    % Convert pixel values to bits (8 bits per pixel)
-    bits = de2bi(img_vector, 8, 'left-msb')';
-    bits = bits(:);
-    
-    % Pad bits to make length a multiple of 4 (for 16-QAM)
-    numBits = length(bits);
-    remainder = mod(numBits, 4);
-    if remainder ~= 0
-        bits = [bits; zeros(4 - remainder, 1)];
-    end
-    
-    % Convert bits to 16-QAM symbols
-    symbols = reshape(bits, 4, [])';
-    symbol_indices = bi2de(symbols, 'left-msb');
-    modSize = 16;
-    if isOctave
-        qamSig = qammod(symbol_indices, modSize);
-        qamSig = qamSig / sqrt(mean(abs(qamSig).^2));
-    else
-        qamSig = qammod(symbol_indices, modSize, 'UnitAveragePower', true);
-    end
-    
-    % Adjust parameters based on image size
-    nQAMSymbols = length(qamSig);
-    basebandOverSampling = round(basebandSamplingRate / symbolRate);
-    NSamples_BB = nQAMSymbols * basebandOverSampling;
-    t = 0:1/basebandSamplingRate:(NSamples_BB-1)/basebandSamplingRate;
-    
-    % Apply RRC filter and resample
-    basebandSig = resample(qamSig,basebandOverSampling,1,basebandRRC);
+   case 'image'
+      % Load and prepare the image
+      img = imread('image.jpg'); % Load image (adjust path as needed)
+      img = imresize(img, [63 63]);   % Resize to reduce data size
+      img_gray = rgb2gray(img);       % Convert to grayscale if necessary
+      img_vector = img_gray(:);       % Flatten to a column vector
+
+      % Convert pixel values to bits (8 bits per pixel)
+      bits = de2bi(img_vector, 8, 'left-msb')';
+      bits = bits(:);
+
+      % Pad bits to make length a multiple of 4 (for 16-QAM)
+      numBits = length(bits);
+      remainder = mod(numBits, 4);
+      if remainder ~= 0
+          bits = [bits; zeros(4 - remainder, 1)];
+      end
+
+      % Convert bits to 16-QAM symbols
+      symbols = reshape(bits, 4, [])';
+      symbol_indices = bi2de(symbols, 'left-msb');
+      modSize = 16;
+      if isOctave
+          qamSig = qammod(symbol_indices, modSize);
+          qamSig = qamSig / sqrt(mean(abs(qamSig).^2));
+      else
+          qamSig = qammod(symbol_indices, modSize, 'UnitAveragePower', true);
+      end
+
+      % Adjust parameters based on image size
+      nQAMSymbols = length(qamSig);
+      basebandOverSampling = round(basebandSamplingRate / symbolRate);
+      NSamples_BB = nQAMSymbols * basebandOverSampling;
+      t = 0:1/basebandSamplingRate:(NSamples_BB-1)/basebandSamplingRate;
+
+      % Apply RRC filter and resample
+      basebandSig = resample(qamSig,basebandOverSampling,1,basebandRRC);
    otherwise
       %%% one tone signal%%%
       basebandSig = exp(1j*2*pi*freqVin1*t);
@@ -240,7 +239,9 @@ end
 
 rfPASignal    = rfPA(rfSignal,PA_Gain,PA_NF,PA_IIP3,Rin,continuousTimeSamplingRate/2);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%% SNDR AND PS   %%%%%%%%%%%%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%                      Ps & SNR                        %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 N = length(rfPASignal);
 Bin_In = round((Flo+freqVin_or1)/continuousTimeSamplingRate*N);
 n = 2; %% prcq c'est un fenetrage de blackman
@@ -250,7 +251,9 @@ Bin_Limits = [f1,f2];
 [SNDR,PS]= perf_estim(rfPASignal,Bin_In,n,Bin_Limits,0);
 snr_db = calculate_snr(rfPASignal,f1,f2,5);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  ACPR %%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%                         ACPR                        %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 f_min = Flo - 30e6/2;
 f_max = Flo + 30e6/2;
@@ -286,14 +289,13 @@ rxSignal_WAT       = rxSignal+AntennaNoise;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%                     Receiver                        %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%    SNR & PAPR (SNR not used for analysis)   %%%   
 Vrms = sqrt(mean(rxSignal_WAT.^2));       % Tension RMS
 Vmax = max(rxSignal_WAT);
-P_avg = (Vrms^2) / Rin;                % Puissance moyenne (W)
-P_dBm = 10*log10(P_avg / 1e-3);   % Conversion en dBm
-disp(['Puissance recue: ', num2str(P_dBm)]);
 disp(['tension vrms : ',num2str(Vrms),'tension max :',num2str(Vmax)])
-f2 = round((30e6/2+Flo)/continuousTimeSamplingRate*N);
-f1 = round((-30e6/2+Flo)/continuousTimeSamplingRate*N);
+f2 = round((20e6/2+Flo)/continuousTimeSamplingRate*N);
+f1 = round((-20e6/2+Flo)/continuousTimeSamplingRate*N);
 snr_db = calculate_snr(rxSignal_WAT,f1,f2,5);
 disp(['snr (dbm) : ', num2str(snr_db)])
 
@@ -315,6 +317,7 @@ RXBB_Filt_rs    = 40;          % Stopband ripple in dB
 RXBB_Filt_fs    = continuousTimeSamplingRate; % Sampling frequency (Hz)
 RXBB_Filt_f     = [10 20]*1e6;  % Cutoff frequencies (Hz)
 RXBB_Filt_a     = [1 0];        % Desired amplitudes
+
 % Convert the deviations to linear units. 
 RXBB_Filt_dev   = [(10^(RXBB_Filt_rp/20)-1)/(10^(RXBB_Filt_rp/20)+1) 10^(-RXBB_Filt_rs/20)];
 % Design the filter
@@ -337,32 +340,34 @@ BBamp_band    = 10e6;% (MHz)
 basebandAnalog_amp_I = BBamp(basebandAnalog_filtrx_I,BBamp_Gain,BBamp_NF,BBamp_IIP3,Rin,BBamp_band,continuousTimeSamplingRate);
 basebandAnalog_amp_Q = BBamp(basebandAnalog_filtrx_Q,BBamp_Gain,BBamp_NF,BBamp_IIP3,Rin,BBamp_band,continuousTimeSamplingRate);
 
-
+%%% Maximum voltage in I/Q voie %%%
 Vmax_i = max(basebandAnalog_amp_I(200:end));
 Vmax_q = max(basebandAnalog_amp_Q(200:end));
-
 disp(['tension max_i : ',num2str(Vmax_i),'tension max_q :',num2str(Vmax_q)])
 
 %%% Analog to Digital Conversion %%%
+Vref_ADC = 1;
 nBitADC = 13;
 delay   = 0;%round(TXBB_Filt_n/2 + RXBB_Filt_n/2 + 1/(2*continuousTimeSamplingRate)); % WARNING : non trivial value !!! to be thoroughly analyzed
 adcSamplingRate = basebandSamplingRate;
-Vref_ADC = 1;
 % Perform conversion
-basebandAnalog_adc_I = ADC(basebandAnalog_amp_I,nBitADC,Vref_ADC = 1;,adcSamplingRate,delay,continuousTimeSamplingRate);
-basebandAnalog_adc_Q = ADC(basebandAnalog_amp_Q,nBitADC,Vref_ADC = 1;,adcSamplingRate,delay,continuousTimeSamplingRate);
+basebandAnalog_adc_I = ADC(basebandAnalog_amp_I,nBitADC,Vref_ADC_ADC,adcSamplingRate,delay,continuousTimeSamplingRate);
+basebandAnalog_adc_Q = ADC(basebandAnalog_amp_Q,nBitADC,Vref_ADC_ADC,adcSamplingRate,delay,continuousTimeSamplingRate);
 %%% IQ combination for complex baseband signals %%%
 basebandComplexDigital                = complex(basebandAnalog_adc_I,basebandAnalog_adc_Q);
 
-N = length(basebandAnalog_adc_I);
-%f_adc = freqVin_or1*N/1.5;
-%freqVin1      = round(f_adc/continuousTimeSamplingRate*N);
-%BW = 5e6*N/1.5 ;
-%f2 = round((BW+f_adc)/continuousTimeSamplingRate*N);
-%f1 = round((-BW+f_adc)/continuousTimeSamplingRate*N);
-%snr_db = calculate_snr(basebandAnalog_adc_I,f1,f2,5);
-%disp(['snr  : ', num2str(snr_db)])
+%%%  SNR (used for sinisoidale Signal) %%%
+if (!(strcmp(test_type, 'image')))
+   N = length(basebandAnalog_adc_I);
+   f_adc = freqVin_or1*N/1.5;
+   freqVin1      = round(f_adc/continuousTimeSamplingRate*N);
+   BW = 5e6*N/1.5 ;
+   f2 = round((BW+f_adc)/continuousTimeSamplingRate*N);
+   f1 = round((-BW+f_adc)/continuousTimeSamplingRate*N);
+   snr_db = calculate_snr(basebandAnalog_adc_I,f1,f2,5);
+   disp(['snr  : ', num2str(snr_db)])
 
+end
 % RX RRC and downsampling (reverse effect of resample(qamSig...) )
 % WARNING : this downsampling may create unexpected sampling effects due to butterworth filtering and phase distortion
 %           please check signals integrity before and after this step
@@ -414,7 +419,7 @@ if strcmp(test_type, 'image')
     subplot(1, 2, 2); % 1 ligne, 2 colonnes, 2ème image
     imshow(img_gray);
     title('Image en niveaux de gris');
-
+   %% U should press to see other plots :)
     waitforbuttonpress;
 end
 
