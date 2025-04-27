@@ -57,6 +57,10 @@ symbolRate              = 15e6;  % The raw symbol rate : the raw complex QAM sym
 basebandOverSampling    = round(basebandSamplingRate/symbolRate);
 NSamples_BB             = 1e3;   % Signal length (after RRC filter)
 
+
+CODAGE = 2; % 0-> : pas de codage , 1-> codage BCH correcteur d'une erreur, 2->  1-> codage BCH correcteur 2 erreurs
+[synd_1,synd_2_1,synd_2_2] = initialisation_synd() ;
+
 % Signal frequencies
 freqVin_or1   = 7.12e6;
 freqVin_or2   = 6.12e6;
@@ -114,21 +118,44 @@ switch test_type
    case 'image'
       % Load and prepare the image
       img = imread('image.jpg'); % Load image (adjust path as needed)
-      img = imresize(img, [63 63]);   % Resize to reduce data size
+      height_pixels = 20;
+      width_pixels = 20;
+      img = imresize(img, [height_pixels width_pixels]);   % Resize to reduce data size
       img_gray = rgb2gray(img);       % Convert to grayscale if necessary
       img_vector = img_gray(:);       % Flatten to a column vector
-
+      
       % Convert pixel values to bits (8 bits per pixel)
       bits = de2bi(img_vector, 8, 'left-msb')';
-      bits = bits(:);
-
+      bits_ori = bits(:);
+    
       % Pad bits to make length a multiple of 4 (for 16-QAM)
-      numBits = length(bits);
-      remainder = mod(numBits, 4);
+      numBits = length(bits_ori);
+      switch CODAGE
+          case 0
+              facteur = 1;
+          case 1 
+              facteur = 26;
+          case 2 
+              facteur = 21;
+      end
+      remainder = mod(numBits, facteur);
+      if (remainder ~= 0)
+          bits = [bits_ori; zeros(facteur - remainder, 1)];
+      end
+      if(CODAGE~=0)
+        BCH_0 = [];
+        M0 = reshape(bits,[],facteur);
+        for i = 1:size(M0,1)
+            numerique = BCH(M0(i,:),CODAGE);
+            BCH_0 = [BCH_0;numerique];
+        end
+        bits = BCH_0(:);
+      end
+      numBits_b_mod = length(bits);
+      remainder = mod(numBits_b_mod, 4);
       if remainder ~= 0
           bits = [bits; zeros(4 - remainder, 1)];
       end
-
       % Convert bits to 16-QAM symbols
       symbols = reshape(bits, 4, [])';
       symbol_indices = bi2de(symbols, 'left-msb');
@@ -278,7 +305,7 @@ disp(['Puissance temporelle: ', num2str(P_dBm)]);
 %%% Channel %%%
 carrierFreq        = Flo; % Center frequency of the transmission
 c                  = 3e8; % speed of light in vacuum
-distance           = 1.4; % Distance between Basestation and UE : [1.4,1.4e3] metres
+distance           = 1100; % Distance between Basestation and UE : [1.4,1.4e3] metres
 % Amplitude Attenuation in free space
 ChannelAttenuation = (c/carrierFreq./(4*pi*distance))^2; % Free space path loss in terms of power
 rxSignal           = rfPASignal*sqrt(ChannelAttenuation);
@@ -357,7 +384,7 @@ basebandAnalog_adc_Q = ADC(basebandAnalog_amp_Q,nBitADC,Vref_ADC,adcSamplingRate
 basebandComplexDigital                = complex(basebandAnalog_adc_I,basebandAnalog_adc_Q);
 
 %%%  SNR (used for sinisoidale Signal) %%%
-if (!(strcmp(test_type, 'image')))
+if (~(strcmp(test_type, 'image')))
    N = length(basebandAnalog_adc_I);
    f_adc = freqVin_or1*N/1.5;
    freqVin1      = round(f_adc/continuousTimeSamplingRate*N);
@@ -397,12 +424,21 @@ if strcmp(test_type, 'image')
     % Convert symbols to bits
     received_bits = de2bi(received_indices, 4, 'left-msb')';
     received_bits = received_bits(:);
-    
+    if (CODAGE~=0)
+        received_bits = received_bits(1:numBits_b_mod);
+        decode = [];
+        BCH_1 = reshape(received_bits,[],31);
+        for i = 1:size(BCH_1,1)
+            numerique = ML2(BCH_1(i,:),CODAGE,synd_1,synd_2_1,synd_2_2);
+            decode = [decode ; numerique];
+        end
+        received_bits = decode;
+    end
     % Remove padding (assuming original image size is known)
-    expected_pixels = 63 * 63; % Adjust based on image size
+    expected_pixels = height_pixels * width_pixels; % Adjust based on image size
     expected_bits = expected_pixels * 8;
     received_bits = received_bits(1:expected_bits);
-    
+    BER = BER(bits_ori,received_bits);
     % Convert bits to pixel values
     received_bytes = reshape(received_bits, 8, [])';
     received_pixels = bi2de(received_bytes, 'left-msb');
