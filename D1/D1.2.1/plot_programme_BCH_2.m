@@ -1,4 +1,4 @@
-    
+   clear; close all; 
     % temps d'excution est  27 seconds x)
     
     %%
@@ -9,25 +9,26 @@
     % generation des signaux aleatoir + modulation(BPSK) des ces signaux dans fonction modulaion
 
     N = 1000; % nombre de sequneces envoyer 
-    Nc = 1000; % nombre des canaux des les quelles les signaux sont passer par
+    Nc = 100; % nombre des canaux des les quelles les signaux sont passer par
     min_N0 = 0.1; % le point de commencement de N0
-    mod = 'PSK'; % type de modulation
-    M   = 2; % taille de constellation
+    mod = 'QAM'; % type de modulation
+    M   = 64; % taille de constellation
     m   = log2(M); % nombre de bits dans 1 symbole
-    canal = 0;
+    canal = 2;
+    Equalizer = 1;
 
     
     [S_0,S_1,S_2,M_0,M_1,M_2]=modulation(N,mod,M);
     
     % la fonction qui simule le canale 
-    Z_0 = selective_canal(S_0,Nc,N,canal,min_N0);
-    Z_1 = selective_canal(S_1,Nc,N,canal,min_N0);
-    Z_2 = selective_canal(S_2,Nc,N,canal,min_N0);
+    [Z_0,H0] = selective_canal(S_0,Nc,N,canal,min_N0);
+    [Z_1,H1] = selective_canal(S_1,Nc,N,canal,min_N0);
+    [Z_2,H2] = selective_canal(S_2,Nc,N,canal,min_N0);
     
     % la fonction qui fais la demodulation (il est lié au canal donc il doivent avoir le meme Nc)
-    bits_0 = demodulation(Z_0,Nc,mod,M);
-    bits_1 = demodulation(Z_1,Nc,mod,M);
-    bits_2 = demodulation(Z_2,Nc,mod,M);
+    bits_0 = demodulation(Z_0,Nc,mod,M,H0,Equalizer);
+    bits_1 = demodulation(Z_1,Nc,mod,M,H1,Equalizer);
+    bits_2 = demodulation(Z_2,Nc,mod,M,H2,Equalizer);
     
     
     % les liste de teaux d'erreurs binaire 

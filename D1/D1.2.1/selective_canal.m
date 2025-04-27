@@ -1,4 +1,4 @@
-function z_1 = selective_canal(s,Nc,N,ch,min_N0)
+function [z_1,H_out] = selective_canal(s,Nc,N,ch,min_N0)
 % Nc : nombre des canaux 
 % S  : symbole d'entrer
 % N  : nombre de sequence 
@@ -41,6 +41,7 @@ if (ch == 0)
     w = 1/sqrt(2)*(randn(1,length(s))+1i*randn(1,length(s)))*sqrt(N0); %bruit gaussien
     z_1(k,:) = w + s*H0 ; 
     k = k+1 ;
+    H_out = diag(ones(1,31));
     end
 end
 if(ch == 1)
@@ -57,6 +58,7 @@ if(ch == 1)
         z_1(k,:)= z ;
         z = [];
         k=k+1;
+        H_out = H1;
     end
 end
 
@@ -74,6 +76,7 @@ if(ch == 2)
         z_1(k,:)= z ;
         z = [];
         k=k+1;
+        H_out = H2;
     end
 end
 if (ch == 3)
@@ -90,6 +93,7 @@ if (ch == 3)
         z_1(k,:)= z ;
         z = [];
         k=k+1;
+        H_out = H3;
     end
 end
 end
