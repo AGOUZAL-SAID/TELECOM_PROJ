@@ -1,15 +1,15 @@
-   clear; close all; 
+
 % temps d'excution est 1 minute et 36 seconds
 
 %%
 
 % generation des signaux aleatoir + modulation(BPSK) des ces signaux dans fonction modulaion
 
-    N = 100; % nombre de sequneces envoyer 
+    N = 1000; % nombre de sequneces envoyer 
     Nc = 100; % nombre des canaux des les quelles les signaux sont passer par
     min_N0 = 0.1; % le point de commencement de N0
-    mod = 'QAM'; % type de modulation
-    M   = 16; % taille de constellation
+    mod = 'PSK'; % type de modulation
+    M   = 2; % taille de constellation
     m   = log2(M); % nombre de bits dans 1 symbole
     canal = 2;
     Equalizer = 1;
@@ -77,12 +77,12 @@
     end
     
     %remplissage de SNR pour BCH 2 en prendre ne compte ratio
-    for N0 = linspace(min_N0, 31/26, Nc)
-    SNR_1  = [SNR_1,(Eb/N0)*(31/26)] ;
+    for N0 = linspace(min_N0, 1, Nc)
+    SNR_1  = [SNR_1,(Eb/N0)*(26/31)] ;
     end
     %remplissage de SNR pour BCH 1 en prendre ne compte ratio
-    for N0 = linspace(min_N0, 31/21, Nc)
-    SNR_2  = [SNR_2,(Eb/N0)*(31/21)] ;
+    for N0 = linspace(min_N0, 1, Nc)
+    SNR_2  = [SNR_2,(Eb/N0)*(21/31)] ;
     end
 
     % conversion en dB du SNR
@@ -99,11 +99,11 @@
     BER_GAIN_1 = [];
     BER_GAIN_2 = [];
 
-    % calcul de gain empirique pour BCH 1 
+      % calcul de gain empirique pour BCH 1 
     for i = 1:Nc
         for j = 1:Nc
-            if (BER_1(i) <= BER_0(j)+0.005 && BER_1(i) >= BER_0(j)-0.005 && BER_0(j) < 20)
-                GAIN_1 = [GAIN_1,SNR_dB_0(i)-SNR_dB_1(j)];
+            if (BER_1(i) <= BER_0(j)+(5/Nc) && BER_1(i) >= BER_0(j)-(5/Nc) && BER_0(j) < 1)
+                GAIN_1 = [GAIN_1,SNR_dB_1(i)-SNR_dB_0(j)];
                 BER_GAIN_1 = [BER_GAIN_1,BER_0(j)];
             end
         end
@@ -112,18 +112,30 @@
     % calcul de gain empirique pour BCH 1 
     for i = 1:Nc
         for j = 1:Nc
-            if (BER_2(i) <= BER_0(j)+0.005 && BER_2(i) >= BER_0(j)-0.005 && BER_0(j) < 20 )
-                GAIN_2 = [GAIN_2,SNR_dB_0(i)-SNR_dB_2(j)];
+            if (BER_2(i) <= BER_0(j)+(5/Nc) && BER_2(i) >= BER_0(j)-(5/Nc) && BER_0(j) < 1 )
+                GAIN_2 = [GAIN_2,SNR_dB_2(i)-SNR_dB_0(j)];
                 BER_GAIN_2 = [BER_GAIN_2,BER_0(j)];
             end
         end
     end
         
+    [BER_GAIN_1, idx] = sort(BER_GAIN_1);
+    GAIN_1 = GAIN_1(idx);
+
+    % 2. Extraire les valeurs uniques en conservant la première occurrence
+    [BER_GAIN_1, idx_unique] = unique(BER_GAIN_1, 'stable');
+    GAIN_1 = GAIN_1(idx_unique).*-1;
     
+    [BER_GAIN_2, idx] = sort(BER_GAIN_2);
+    GAIN_2 = GAIN_2(idx).*-1;
+
+    % 2. Extraire les valeurs uniques en conservant la première occurrence
+    [BER_GAIN_2, idx_unique] = unique(BER_GAIN_2, 'stable');
+    GAIN_2 = GAIN_2(idx_unique);
+
     % le gain empirique theorique
     GAIN_1_Theo = 10*log10((26/31)*2);
     GAIN_2_Theo = 10*log10((21/31)*3);
-
     % Ajout du tracé des courbes BER en fonction du SNR 
     figure; 
     semilogy(SNR_dB_0, BER_0, 'bo-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le non codé
