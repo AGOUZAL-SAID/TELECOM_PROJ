@@ -43,10 +43,14 @@
         for j = 1:size(non_coded,1)
             temp = BER(non_coded(j,:),origin(j,:)); % calacule de BER pour chaque canal
             if (temp ~= 0)
-                sym = bits2symbols(origin(j,:),mod,M);
+                word = [origin(j,:),0];
+                if (M==8)
+                    word = [origin(j,:),0,0];
+                end
+                sym = bits2symbols(word,mod,M);
                 sortie = canal_ARQ(sym,N0_entre(i));
                 numerique = demodulation(sortie,1,mod,M,H0,Equalizer);
-                temp = BER(numerique,origin(j,:)); % calacule de BER pour chaque sequence
+                temp = BER(numerique(1:31),origin(j,:)); % calacule de BER pour chaque sequence
             end
             sum_0 = sum_0 + temp ;
         end
@@ -64,10 +68,14 @@
             decode = ML2 (BCH_2(j,:),2,synd_1,synd_2_1,synd_2_2); % decode de code recus d'apres le canal
             temp = BER(decode,M_2(j,:)); % calacule de BER pour chaque canal
             if (temp ~= 0)
-                sym = bits2symbols(BCH(M_2(j,:),2),mod,M);
+                word = [BCH(M_2(j,:),2),0];
+                if (M==8)
+                    word = [BCH(M_2(j,:),2),0,0];
+                end
+                sym = bits2symbols(word,mod,M);
                 sortie = canal_ARQ(sym,N0_entre(i));
                 numerique = demodulation(sortie,1,mod,M,H0,Equalizer);
-                decode = ML2 (numerique,1,synd_1,synd_2_1,synd_2_2);
+                decode = ML2 (numerique(1:31),1,synd_1,synd_2_1,synd_2_2);
                 temp = BER(decode,M_1(j,:)); % calacule de BER pour chaque sequence
             end
             sum_2 = sum_2 + temp ;
@@ -81,14 +89,14 @@
     SNR_2 = [];
 
     % remplissage de liste de SNR
-    Eb = 1 ; % on a modulation BPSK 
+    Es = m ; 
     for N0 = linspace(min_N0, 1, Nc)
-    SNR_0  = [SNR_0,Eb/N0] ;
+    SNR_0  = [SNR_0,Es/N0] ;
     end
     
     %remplissage de SNR pour BCH 1 en prendre ne compte ratio
     for N0 = linspace(min_N0, 1, Nc)
-    SNR_2  = [SNR_2,(Eb/N0)*(21/31)] ;
+    SNR_2  = [SNR_2,(Es/N0)*(21/31)] ;
     end
 
     % conversion en dB du SNR
@@ -128,9 +136,9 @@
 
     % Ajout du tracé des courbes BER en fonction du SNR 
     figure;
-    semilogy(SNR_dB_0, BER_0, 'bo-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le non codé
+    plot(SNR_dB_0, BER_0, 'bo-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le non codé
     hold on;
-    semilogy(SNR_dB_2, BER_2, 'gs-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le code BCH_2
+    plot(SNR_dB_2, BER_2, 'gs-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le code BCH_2
     xlabel('SNR (dB)');
     ylabel('BER %');
     title('Comparaison des performances BER en fonction du SNR');

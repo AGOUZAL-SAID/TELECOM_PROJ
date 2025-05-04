@@ -58,7 +58,7 @@ basebandOverSampling    = round(basebandSamplingRate/symbolRate);
 NSamples_BB             = 1e3;   % Signal length (after RRC filter)
 
 
-CODAGE = 2; % 0-> : pas de codage , 1-> codage BCH correcteur d'une erreur, 2->  1-> codage BCH correcteur 2 erreurs
+CODAGE = 0; % 0-> : pas de codage , 1-> codage BCH correcteur d'une erreur, 2->  1-> codage BCH correcteur 2 erreurs
 [synd_1,synd_2_1,synd_2_2] = initialisation_synd() ;
 
 % Signal frequencies
@@ -118,8 +118,8 @@ switch test_type
    case 'image'
       % Load and prepare the image
       img = imread('image.jpg'); % Load image (adjust path as needed)
-      height_pixels = 20;
-      width_pixels = 20;
+      height_pixels = 30;
+      width_pixels = 30;
       img = imresize(img, [height_pixels width_pixels]);   % Resize to reduce data size
       img_gray = rgb2gray(img);       % Convert to grayscale if necessary
       img_vector = img_gray(:);       % Flatten to a column vector
@@ -305,7 +305,7 @@ disp(['Puissance temporelle: ', num2str(P_dBm)]);
 %%% Channel %%%
 carrierFreq        = Flo; % Center frequency of the transmission
 c                  = 3e8; % speed of light in vacuum
-distance           = 1100; % Distance between Basestation and UE : [1.4,1.4e3] metres
+distance           = 1000; % Distance between Basestation and UE : [1.4,1.4e3] metres
 % Amplitude Attenuation in free space
 ChannelAttenuation = (c/carrierFreq./(4*pi*distance))^2; % Free space path loss in terms of power
 rxSignal           = rfPASignal*sqrt(ChannelAttenuation);
@@ -438,7 +438,7 @@ if strcmp(test_type, 'image')
     expected_pixels = height_pixels * width_pixels; % Adjust based on image size
     expected_bits = expected_pixels * 8;
     received_bits = received_bits(1:expected_bits);
-    BER = BER(bits_ori,received_bits);
+    BER = BER(bits_ori,received_bits');
     % Convert bits to pixel values
     received_bytes = reshape(received_bits, 8, [])';
     received_pixels = bi2de(received_bytes, 'left-msb');

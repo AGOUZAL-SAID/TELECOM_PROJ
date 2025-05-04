@@ -14,8 +14,8 @@
     mod = 'PSK'; % type de modulation
     M   = 2; % taille de constellation
     m   = log2(M); % nombre de bits dans 1 symbole
-    canal = 0;
-    Equalizer = 0;
+    canal = 3;
+    Equalizer = 2;
 
     
     [S_0,S_1,S_2,M_0,M_1,M_2]=modulation(N,mod,M);
