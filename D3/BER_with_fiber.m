@@ -1,9 +1,10 @@
 clear; close all;
 Rb_values = [2.5e9, 5e9, 10e9]; % Bit rates in bps
-P_opt_dBm_range = -30:0.1:0;      % Optical power range in dBm
+P_opt_dBm_range = -30:0.1:10;      % Optical power range in dBm
 N_bits = 1e3;% Number of bits to simulate
 over_samp = 10 ;
-distance = 100; % km
+distance = 22; % km (24.8 !)
+alpha = -0.24;
 
 BER = zeros(length(Rb_values), length(P_opt_dBm_range));
 
@@ -23,11 +24,10 @@ for rb_idx = 1:length(Rb_values)
     for p_idx = 1:length(P_opt_dBm_range)
         P_opt_dBm = P_opt_dBm_range(p_idx);
         params_eml.P_opt_dBm = P_opt_dBm; 
-
-        [S_opt, Ts_out, ~] = TX_optical_eml(bits, Ts, params_eml);
-        [S_out,sur_sig] = fiber(S_opt,distance,Ts_out,over_samp);
+        [S_opt, Ts_out, ~] = TX_optical_eml(over_bits, Ts, params_eml);
+        S_out = fiber(S_opt,distance,Ts_out);
         [S_elec, ~, ~, ~] = RX_photodetector(S_out, Ts_out, 0, params_detector);
-        laser_power = 10^((P_opt_dBm - 30)/10);
+        laser_power = 10^((P_opt_dBm - 30  )/10);
         I1 = params_detector.sensitivity * laser_power;
         threshold = I1 / 2;
         received_bits = S_elec > threshold;
