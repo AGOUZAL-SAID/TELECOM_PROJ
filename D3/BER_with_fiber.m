@@ -1,54 +1,82 @@
 clear; close all;
-Rb_values = [2.5e9, 5e9, 10e9]; % Bit rates in bps
-P_opt_dBm_range = -30:0.1:-2;      % Optical power range in dBm
-N_bits = 1e3;% Number of bits to simulate
-over_samp = 10 ;
-distance = 10; % km (24.8 !)
-alpha = -0.24;%db/km attenuation
 
+% Débits binaires à tester
+Rb_values       = [2.5e9, 5e9, 10e9];    % en bps
+% Plage de puissances optiques
+P_opt_dBm_range = -25:0.5:20;            % en dBm
+% Paramètres de la simulation
+N_bits    = 1e3;      % nombre de bits simulés
+over_samp = 10;       % facteur d’oversampling
+distance  = 60;       % distance de propagation en fibre (km)
+alpha     = -0.24;    % atténuation linéique (dB/km)
+moyennage = 10;       % nombre de répétitions pour moyennage
+
+% Préallocation du vecteur de BER
 BER = zeros(length(Rb_values), length(P_opt_dBm_range));
 
+%% Boucle sur chaque débit binaire
 for rb_idx = 1:length(Rb_values)
-    Rb = Rb_values(rb_idx);
-    Ts = 1 / Rb; 
-    bits = randi([0, 1], 1, N_bits);
+    Rb   = Rb_values(rb_idx);      % débit actuel
+    Ts   = 1 / Rb;                 % durée d’un symbole (s)
+    bits = randi([0, 1], 1, N_bits); % génération aléatoire des bits
+    
+    % Construction du signal NRZ suréchantillonné
     over_bits = [];
-    for i = 1:1:N_bits
-        for j = 1:1:over_samp
-            over_bits = [over_bits,bits(i)];
+    for i = 1:N_bits
+        for j = 1:over_samp
+            over_bits = [over_bits, bits(i)];  % répéter chaque bit
         end
     end
-    params_eml = make_emlaser('modulation', 'I', 'P_opt_dBm', 0);
+    
+    % Initialisation du modulateur externe et du photodétecteur
+    params_eml      = make_emlaser('modulation', 'I', 'P_opt_dBm', 0);
     params_detector = make_photodetector('B_e', Rb);
     
+    %% Boucle sur chaque niveau de puissance optique
     for p_idx = 1:length(P_opt_dBm_range)
-        P_opt_dBm = P_opt_dBm_range(p_idx);
-        params_eml.P_opt_dBm = P_opt_dBm; 
-        [S_opt, Ts_out, ~] = TX_optical_eml(over_bits, Ts, params_eml);
-        S_out = fiber(S_opt,distance,Ts_out);
-        [S_elec, ~, ~, ~] = RX_photodetector(S_out, Ts_out, 0, params_detector);
-        laser_power = 10^((P_opt_dBm - 30  )/10);
-        I1 = params_detector.sensitivity * laser_power;
-        facteur = sqrt(distance+1)*2;
-        threshold = I1 / facteur;
-        S_matrix = reshape(S_elec, over_samp, N_bits);
-        mid_idx      = floor(over_samp/2);
-        S_mid        = S_matrix(mid_idx, :);
-        received_bits = S_mid > threshold;
-        errors = sum(bits ~= received_bits);
-        BER(rb_idx, p_idx) = errors / N_bits;
+        errors = 0;  % compteur d’erreurs pour cette configuration
+        
+        for m = 1:moyennage
+            % Mise à jour de la puissance optique du modulateur
+            P_opt_dBm       = P_opt_dBm_range(p_idx);
+            params_eml.P_opt_dBm = P_opt_dBm;
+            
+            % Modulation optique (émission du signal)
+            [S_opt, Ts_out, ~] = TX_optical_eml(over_bits, Ts/over_samp, params_eml);
+            
+            % Propagation en fibre
+            S_out = fiber(S_opt, distance, Ts_out);
+            
+            % Détection opto-électronique (photodiode)
+            [S_elec, ~, ~, ~] = RX_photodetector(S_out, Ts_out, 0, params_detector);
+            
+            % Calcul du seuil de décision (moitié du courant ‘1’ atténué)
+            laser_power = 10^((P_opt_dBm - 30)/10);                        % conversion dBm→W
+            I1          = params_detector.sensitivity * laser_power * 10^(alpha*distance/10);
+            threshold   = I1 / 2;
+            
+            % Reshape pour extraire l’échantillon central de chaque symbole
+            S_mid        = reshape(S_elec, over_samp, N_bits);
+            median       = S_mid(round(over_samp/2), :);
+            received_bits = median > threshold;  % décision binaire
+            
+            % Accumulation du nombre d’erreurs
+            errors = errors + sum(bits ~= received_bits);
+        end
+        
+        % Calcul de la BER moyenne pour ce débit et cette puissance
+        BER(rb_idx, p_idx) = errors / (N_bits * moyennage);
     end
 end
 
-
-figure; 
-semilogy(P_opt_dBm_range, BER(1,:), 'bo-', 'LineWidth', 2, 'MarkerSize', 8); 
+%% Affichage des résultats
+figure;
+semilogy(P_opt_dBm_range, BER(1,:), 'bo-', 'LineWidth', 2, 'MarkerSize', 8);
 hold on;
-semilogy(P_opt_dBm_range, BER(2,:), 'r*-', 'LineWidth', 2, 'MarkerSize', 8); 
-semilogy(P_opt_dBm_range, BER(3,:), 'gs-', 'LineWidth', 2, 'MarkerSize', 8); 
-xlabel('Optical Power (dBm)');
-ylabel('BER ');
-title('BER vs. Optical Power for OOK Back-to-Back System');
-legend('2.5 Gb/s', '5 Gb/s', '10 Gb/s');
-grid on;
-hold off;
+semilogy(P_opt_dBm_range, BER(2,:), 'r*-', 'LineWidth', 2, 'MarkerSize', 8);
+semilogy(P_opt_dBm_range, BER(3,:), 'gs-', 'LineWidth', 2, 'MarkerSize', 8);
+xlabel('Optical Power (dBm)');        % étiquette de l’axe des abscisses
+ylabel('BER');                        % étiquette de l’axe des ordonnées
+title('BER vs. Optical Power for OOK fiber propagation'); % titre du graphique
+legend('2.5 Gb/s', '5 Gb/s', '10 Gb/s', 'Location','best'); % légende
+grid on; hold off;

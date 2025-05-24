@@ -1,104 +1,73 @@
 clear; close all;
-Rb_values = [2.5e9, 5e9, 10e9]; % Bit rates in bps
-P_opt_dBm_range = -30:0.25:-15;      % Optical power range in dBm
-N_bits = 1e3;                   % Number of bits to simulate
-over_samp = 10;
-BER_rego_1 = [];
-BER_rego_2 = [];
-BER_rego_3 = [];
-P_rego_1 = [];
-P_rego_2 = [];
-P_rego_3 = [];
-max_iter = 100;
-tol = 3e-3;
 
+% Définition des paramètres principaux
+Rb_values        = [2.5e9, 5e9, 10e9];    % débits binaires (bps)
+P_opt_dBm_range  = -30:0.5:-15;           % puissance optique (dBm)
+N_bits           = 1e3;                   % nombre de bits simulés
+over_samp        = 10;                    % facteur d’oversampling
+max_iter         = 2000;                  % nombre d’itérations pour moyennage
 
+% Préallocation de la matrice de BER
 BER = zeros(length(Rb_values), length(P_opt_dBm_range));
 
 for rb_idx = 1:length(Rb_values)
-    Rb = Rb_values(rb_idx);
-    Ts = 1 / Rb; 
-    bits = randi([0, 1], 1, N_bits);
+    Rb   = Rb_values(rb_idx);       % débit actuel
+    Ts   = 1 / Rb;                  % durée symbole (s)
+    bits = randi([0, 1], 1, N_bits);% trame binaire aléatoire
+    
+    % Génération du signal NRZ suréchantillonné
     over_bits = [];
-    for i = 1:1:N_bits
-        for j = 1:1:over_samp
-            over_bits = [over_bits,bits(i)];
+    for i = 1:N_bits
+        for j = 1:over_samp
+            over_bits = [over_bits, bits(i)];  % répète chaque bit over_samp fois
         end
     end
-    params_eml = make_emlaser('modulation', 'I', 'P_opt_dBm', 0);
+    
+    % Initialisation du modulateur externe et du photodétecteur
+    params_eml     = make_emlaser('modulation', 'I', 'P_opt_dBm', 0);
     params_detector = make_photodetector('B_e', Rb);
     
     for p_idx = 1:length(P_opt_dBm_range)
-            P_opt_dBm = P_opt_dBm_range(p_idx);
-            params_eml.P_opt_dBm = P_opt_dBm; 
-            [S_opt, Ts_out, ~] = TX_optical_eml(over_bits, Ts, params_eml);
-            [S_elec, ~, ~, ~] = RX_photodetector(S_opt, Ts_out, 0, params_detector);
-            laser_power = 10^((P_opt_dBm - 30)/10);
-            I1 = params_detector.sensitivity * laser_power;
-            threshold = I1 / 2 ;
-            S_matrix = reshape(S_elec, over_samp, N_bits);
-            mid_idx      = floor(over_samp/2);
-            S_mid        = S_matrix(mid_idx, :);
-            received_bits = S_mid > threshold;
-            errors = sum(bits ~= received_bits);
-            BER(rb_idx, p_idx) = errors / N_bits;
-    end
-    comptage = 0;
-    P = P_opt_dBm_range;
-    BER_i = BER(rb_idx,:);
-    while comptage<max_iter
-        comptage = comptage+1;
-        rafiner = false;
-        L = length(P);
-        for k = round(L/2):L-1
-            if BER_i(k+1)-BER_i(k)>tol
-                P_opt_dBm = p_moy;
-                params_eml.P_opt_dBm = P_opt_dBm; 
-                [S_opt, Ts_out, ~] = TX_optical_eml(over_bits, Ts, params_eml);
-                [S_elec, ~, ~, ~] = RX_photodetector(S_opt, Ts_out, 0, params_detector);
-                laser_power = 10^((P_opt_dBm - 30)/10);
-                I1 = params_detector.sensitivity * laser_power;
-                threshold = I1 / 2 ;
-                S_matrix = reshape(S_elec, over_samp, N_bits);
-                mid_idx      = floor(over_samp/2);
-                S_mid        = S_matrix(mid_idx, :);
-                received_bits = S_mid > threshold;
-                errors = sum(bits ~= received_bits);
-                temp = errors / N_bits;
-                P = [P,p_moy];
-                BER_i = [BER_i,temp];
-                [P, idx] = sort(P);
-                BER_i = BER_i(idx);
-                rafiner = true;
-
-            end
-        end
-        if ~rafiner
-            break
-        end
-    end
-    if rb_idx == 1 
-        P_rego_1 = P;
-        BER_rego_1 = BER_i;  
-    elseif rb_idx == 2
-        P_rego_2 = P;
-        BER_rego_2 = BER_i;
-    else
-        P_rego_3 = P;
-        BER_rego_3 = BER_i;
-    end
+        errors = 0;  % compteur d’erreurs pour cette puissance
         
+        for iter = 1:max_iter
+            % Mise à jour de la puissance du laser
+            P_opt_dBm = P_opt_dBm_range(p_idx);
+            params_eml.P_opt_dBm = P_opt_dBm;
+            
+            % Modulation optique (émission)
+            [S_opt, Ts_out, ~] = TX_optical_eml(over_bits, Ts, params_eml);
+            % Détection directe (sans fibre)
+            [S_elec, ~, ~, ~] = RX_photodetector(S_opt, Ts_out, 0, params_detector);
+            
+            % Calcul du seuil de décision (moitié du niveau ‘1’)
+            laser_power = 10^((P_opt_dBm - 30)/10);  % convert dBm → W
+            I1 = params_detector.sensitivity * laser_power;
+            threshold = I1 / 2;
+            
+            % Reshape pour extraire l’échantillon central de chaque bit
+            S_matrix     = reshape(S_elec, over_samp, N_bits);
+            mid_idx      = floor(over_samp/2);       % index central
+            S_mid        = S_matrix(mid_idx, :);     % valeur centrale de chaque symbole
+            received_bits = S_mid > threshold;       % décision binaire
+            
+            % Comptage des erreurs bit à bit
+            errors = errors + sum(bits ~= received_bits);
+        end
+        
+        % Calcul de la BER moyenne pour ce débit et cette puissance
+        BER(rb_idx, p_idx) = errors / (N_bits * max_iter);
+    end
 end
 
-
+% Affichage des courbes de BER
 figure; 
-    semilogy(P_rego_1, BER_rego_1, 'bo-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le non codé
-    hold on;
-    semilogy(P_rego_2, BER_rego_2, 'r*-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le code BCH_1
-    semilogy(P_rego_3, BER_rego_3, 'gs-', 'LineWidth', 2, 'MarkerSize', 8); % Courbe pour le code BCH_2
-    xlabel('Optical Power (dBm)');
-    ylabel('BER ');
-    title('BER vs. Optical Power for OOK Back-to-Back System');
-    legend('2.5 Gb/s', '5 Gb/s', '10 Gb/s');
-    grid on;
-    hold off;
+semilogy(P_opt_dBm_range, BER(1,:), 'bo-', 'LineWidth', 2, 'MarkerSize', 8); hold on;
+semilogy(P_opt_dBm_range, BER(2,:), 'r*-', 'LineWidth', 2, 'MarkerSize', 8);
+semilogy(P_opt_dBm_range, BER(3,:), 'gs-', 'LineWidth', 2, 'MarkerSize', 8);
+xlabel('Optical Power (dBm)');
+ylabel('BER');
+title('BER vs. Optical Power for OOK Back-to-Back System');
+legend('2.5 Gb/s', '5 Gb/s', '10 Gb/s', 'Location','best');
+grid on;
+hold off;
