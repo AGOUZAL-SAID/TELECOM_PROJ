@@ -3,15 +3,13 @@ clear; close all;
 % Débits binaires à tester
 Rb_values       = [10e9];    % en bps
 % Plage de puissances optiques
-P_opt_dBm_range = -25:1:0;            % en dBm
+P_opt_dBm_range = -25:0.5:30;            % en dBm
 % Paramètres de la simulation
 N_bits    = 1e3;      % nombre de bits simulés
 over_samp = 10;       % facteur d’oversampling
-distance2 = 15.8 ;    % distance de propagation en fibre DCF (km)
-distance  = 100 - distance2;       % distance de propagation en fibre (km)
-alpha     = -0.24;    % atténuation linéique (dB/km)
-alpha2    = 0.425  ;   % atténuation linéique (dB/km) pour DCF
-moyennage = 500;       % nombre de répétitions pour moyennage
+distance  = 100;       % distance de propagation en fibre (km)
+alpha     = -0.35;    % atténuation linéique (dB/km)
+moyennage = 250;       % nombre de répétitions pour moyennage
 
 % Préallocation du vecteur de BER
 BER = zeros(length(Rb_values), length(P_opt_dBm_range));
@@ -47,15 +45,14 @@ for rb_idx = 1:length(Rb_values)
             [S_opt, Ts_out, ~] = TX_optical_eml(over_bits, Ts/over_samp, params_eml);
             
             % Propagation en fibre
-            S1 = fiber(S_opt, distance, Ts_out);
-            S_out = fiber_PMDCF(S1,distance2,Ts_out);
+            S_out = fiber_o(S_opt, distance, Ts_out);
             
             % Détection opto-électronique (photodiode)
             [S_elec, ~, ~, ~] = RX_photodetector(S_out, Ts_out, 0, params_detector);
             
             % Calcul du seuil de décision (moitié du courant ‘1’ atténué)
             laser_power = 10^((P_opt_dBm - 30)/10);                        % conversion dBm→W
-            I1          = params_detector.sensitivity * laser_power * 10^(alpha*distance/10) * 10^(alpha2*distance2/10);
+            I1          = params_detector.sensitivity * laser_power * 10^(alpha*distance/10);
             threshold   = I1 / 2;
             
             % Reshape pour extraire l’échantillon central de chaque symbole
@@ -75,9 +72,10 @@ end
 %% Affichage des résultats
 figure;
 semilogy(P_opt_dBm_range , BER(1,:), 'bo-', 'LineWidth', 2, 'MarkerSize', 8);
+
 xlabel('Optical Power (dBm)');        % étiquette de l’axe des abscisses
 ylabel('BER');                        % étiquette de l’axe des ordonnées
-title('BER vs. Optical Power for OOK fiber propagation + DCF'); % titre du graphique
-legend('10 Gb/s', 'Location','best'); % légende
-grid on;
+title('BER vs. Optical Power for OOK fiber propagation'); % titre du graphique
+legend( '10 Gb/s', 'Location','best'); % légende
+grid on; 
 hold off;
