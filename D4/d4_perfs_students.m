@@ -18,7 +18,7 @@ function [rej] = d4_perfs_students(mode,rx)
 
 Ts=1/(20e6);
 MC=1000; %%number of Monte-Carlo simulations
-Dmax = 2;
+Dmax = 1e3;
 
 if(strcmp(mode,'40k')==1) 
 R=40*10^(3); 
@@ -42,15 +42,15 @@ end;
 
 
 if(strcmp(rx,'zf')==1)
-SNR_min_bpsk= [9.25,13.5,25] ; %minimum Es/N0 for each channel (3-length vector);
-SNR_min_8qam= [12,16,24]     ;%minimum Es/N0 for each channel (3-length vector);
-SNR_min_16qam= [13.5,18,25.75]; %minimum Es/N0 for each channel (3-length vector);
+SNR_min_bpsk= [9.25,13.5,21] ; %minimum Es/N0 for each channel (3-length vector);
+SNR_min_8qam= [15.5,20.5,28.5]     ;%minimum Es/N0 for each channel (3-length vector);
+SNR_min_16qam= [19,24,32]; %minimum Es/N0 for each channel (3-length vector);
 end;
 
 if(strcmp(rx,'dfe')==1)
 SNR_min_bpsk= [9,11,13.5] ;%minimum Es/N0 for each channel (3-length vector);
-SNR_min_8qam= [11,14,16]  ;%minimum Es/N0 for each channel (3-length vector);
-SNR_min_16qam= [13.25,16,18.75] ;%minimum Es/N0 for each channel (3-length vector);
+SNR_min_8qam= [15.5,17.5,20.5]  ;%minimum Es/N0 for each channel (3-length vector);
+SNR_min_16qam= [19,22,24] ;%minimum Es/N0 for each channel (3-length vector);
 end;
   
 
@@ -61,17 +61,15 @@ for kk=1:length(K)
 aux=0;
 
 for mm=1:MC
-xx= randi(Dmax,1,length(kk)); % uniformly-distributed x-axis in a square of semi-length 1 (K(kk) length vector);
-yy= randi(Dmax,1,length(kk)); % uniformly-distributed y-axis in a square of semi-length 1 (K(kk) length vector);
-
+xx= Dmax*(2*rand(1,K(kk))-1); % uniformly-distributed x-axis in a square of semi-length 1 (K(kk) length vector);
+yy= Dmax*(2*rand(1,K(kk))-1); % uniformly-distributed y-axis in a square of semi-length 1 (K(kk) length vector);
 d2=xx.^2+yy.^2;%% square-distance from the origin 
-inter = 3.957e-4; %% (c/pi*f0)^2
-a2=min(1, inter/d2);% square magnitude attenuation in Friis equation (calculate ??) 
+inter = 1e-4; %% (c/4*pi*f0)^2
+a2=min(1, inter./d2);% square magnitude attenuation in Friis equation (calculate ??) 
 a2_dB=10*log10(a2);
-SNR_rx_max= a2_dB + 91; %calculate 10log(Pmax*Ts)+174 : SNRmax at TX in dB
-
+SNR_rx_max= a2_dB + 121; %calculate 10log(Pmax*Ts)+174 : SNRmax at TX in dB
 SNR_min=SNR_min_16qam; %%ZF or DFE/16QAM: channel 1, channel 2, channel 3
-if(R*Ts*K(kk)<3)  SNR_min=SNR_min_8qam; end%%ZF or DFE/8QAM: channel 1, channel 2, channel 3
+if(R*Ts*K(kk)<3)  SNR_min=SNR_min_8qam; end%%ZF or DFE/8QAM: channel 1, channel 2, channel 3  (
 if(R*Ts*K(kk)<1) SNR_min=SNR_min_bpsk; end %%ZF or DFE/BPSK: channel 1, channel 2, channel 3
   
 SNR_rx_min=SNR_min(randi(3,K(kk),1));
@@ -79,6 +77,7 @@ SNR_rx_min=SNR_min(randi(3,K(kk),1));
 aux=aux+length((find(sign(SNR_rx_min-SNR_rx_max)+1)/2));
 
 end
+
 
 rej(kk)= aux/(K(kk)*MC);
 
