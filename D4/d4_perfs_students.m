@@ -22,22 +22,27 @@ Dmax = 1e3;
 
 if(strcmp(mode,'40k')==1) 
 R=40*10^(3); 
-Kmax=2000; 
+Kmax=2000;
+K=[1:(floor(Kmax/10)+1):Kmax];
 end;
 
 if(strcmp(mode,'400k')==1) 
 R=400*10^(3); 
 Kmax=200; 
+
+K=[1:1:Kmax];
 end;
 
 if(strcmp(mode,'4M')==1) 
 R=4*10^(6); 
 Kmax=20;
+K=[1:1:Kmax];
 end;
 
 if(strcmp(mode,'40M')==1) 
 R=40*10^(6);
 Kmax=2; 
+K=[1:1:Kmax];
 end;
 
 
@@ -54,7 +59,6 @@ SNR_min_16qam= [19,22,24] ;%minimum Es/N0 for each channel (3-length vector);
 end;
   
 
-K=[1:(floor(Kmax/10)+1):Kmax];
 
 rej=zeros(1,length(K));
 
@@ -87,7 +91,7 @@ end;
 
 
 %% Channel display
-stairs(K,rej,'r*-');
+stairs(K,rej,'r*');
 xlabel('Nombre d utilisateurs (K)');
 ylabel('Taux de rejet');
 title('Taux de rejet en fonction du nombre d utilisateurs');
