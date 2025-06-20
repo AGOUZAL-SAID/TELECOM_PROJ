@@ -55,6 +55,7 @@ end;
   
 
 K=[1:(floor(Kmax/10)+1):Kmax];
+
 rej=zeros(1,length(K));
 
 for kk=1:length(K)
@@ -86,5 +87,8 @@ end;
 
 
 %% Channel display
-plot(K,rej,'r--');
+stairs(K,rej,'r*-');
+xlabel('Nombre d utilisateurs (K)');
+ylabel('Taux de rejet');
+title('Taux de rejet en fonction du nombre d utilisateurs');
 grid
