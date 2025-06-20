@@ -91,8 +91,9 @@ end;
 
 
 %% Channel display
-stairs(K,rej,'r*');
-xlabel('Nombre d utilisateurs (K)');
-ylabel('Taux de rejet');
-title('Taux de rejet en fonction du nombre d utilisateurs');
-grid
+%stairs(K,rej,'r*');
+%xlabel('Nombre d utilisateurs (K)');
+%ylabel('Taux de rejet');
+%title('Taux de rejet en fonction du nombre d utilisateurs');
+%grid
+%hold on;
