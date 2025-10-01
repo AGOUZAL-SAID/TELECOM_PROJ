@@ -1,63 +1,63 @@
 # TELECOM_PROJ
 
-Ce dépôt contient un ensemble de projets et de simulations liés aux télécommunications, principalement implémentés en MATLAB. Il couvre divers aspects de la modélisation de canaux, de la performance des systèmes de communication optique et de l'analyse de signaux.
+This repository contains a set of projects and simulations related to telecommunications, primarily implemented in MATLAB. It covers various aspects of channel modeling, optical communication system performance, and signal analysis.
 
-## Structure du dépôt
+## Repository Structure
 
-Le dépôt est organisé en plusieurs répertoires, chacun correspondant à une partie spécifique du projet ou à un module d'étude.
+The repository is organized into several directories, each corresponding to a specific part of the project or a study module.
 
 ### `D1`
 
-Ce répertoire contient des scripts MATLAB pour des fonctions de base en traitement du signal et en communication, telles que :
+This directory contains MATLAB scripts for basic signal processing and communication functions, such as:
 
-*   `ask_mod.m`, `fsk_mod.m`, `psk_mod.m` : Fonctions de modulation ASK, FSK et PSK.
-*   `demod.m` : Fonction de démodulation générique.
-*   `gen_signal.m` : Génération de signaux.
-*   `matched_filter.m` : Implémentation d'un filtre adapté.
-*   `QAM_mod.m`, `QAM_demod.m` : Fonctions de modulation et démodulation QAM.
-*   `signal_gen.m` : Génération de signaux divers.
+*   `ask_mod.m`, `fsk_mod.m`, `psk_mod.m`: ASK, FSK, and PSK modulation functions.
+*   `demod.m`: Generic demodulation function.
+*   `gen_signal.m`: Signal generation.
+*   `matched_filter.m`: Matched filter implementation.
+*   `QAM_mod.m`, `QAM_demod.m`: QAM modulation and demodulation functions.
+*   `signal_gen.m`: Various signal generation.
 
 ### `D2`
 
-Ce répertoire est dédié à la modélisation de canaux et à l'analyse de la performance. Il inclut :
+This directory is dedicated to channel modeling and performance analysis. It includes:
 
-*   **`subblocks/channelModel/QuaDriGa_2019.06.27_v2.2.0`** : Intégration du modèle de canal QuaDRiGa, un simulateur de canal radio pour les systèmes de communication sans fil. Ce sous-répertoire contient des scripts pour la configuration, la génération de pistes (tracks), et des tutoriels pour l'utilisation de QuaDRiGa.
-    *   `quadriga_src` : Le code source de QuaDRiGa, avec des configurations de canaux (`config/*.conf`) et des scripts de tutoriel (`tutorials/*.m`).
-*   **`subblocks/signal_analysis_and_performance_function`** : Scripts pour l'analyse spectrale et l'estimation de performance.
+*   **`subblocks/channelModel/QuaDriGa_2019.06.27_v2.2.0`**: Integration of the QuaDRiGa channel model, a radio channel simulator for wireless communication systems. This subdirectory contains scripts for configuration, track generation, and tutorials for using QuaDRiGa.
+    *   `quadriga_src`: The QuaDRiGa source code, with channel configurations (`config/*.conf`) and tutorial scripts (`tutorials/*.m`).
+*   **`subblocks/signal_analysis_and_performance_function`**: Scripts for spectral analysis and performance estimation.
     *   `perf_estim.m`, `plot_spectrum.m`, `simple_plot_spectrum.m`, `simple_raw_spectrum.m`.
 
 ### `D3`
 
-Ce module se concentre sur les systèmes de communication optique, avec des simulations de la fibre optique et des composants optoélectroniques. Il contient :
+This module focuses on optical communication systems, with simulations of optical fiber and optoelectronic components. It contains:
 
-*   `BER_Wf.m`, `BER_with_fiber.m`, `BER_with_fiber_direct.m` : Calcul du taux d'erreur binaire (BER) avec et sans fibre optique.
-*   `egalizateur.m` : Implémentation d'un égaliseur.
-*   `fiber.m`, `fiber_PMDCF.m`, `fiber_o.m` : Modèles de fibre optique.
-*   `make_emlaser.m`, `make_laser_simple.m`, `make_photodetector.m` : Fonctions pour modéliser des lasers et des photodétecteurs.
-*   `model.m`, `model_band_O.m`, `model_equalizer.m` : Modèles de système optique.
-*   `RX_photodetector.m`, `TX_optical_dml.m`, `TX_optical_eml.m` : Modèles de récepteur et d'émetteur optique.
-*   `D3.pdf` : Un document PDF qui pourrait contenir des explications ou des résultats liés à ce module.
+*   `BER_Wf.m`, `BER_with_fiber.m`, `BER_with_fiber_direct.m`: Bit Error Rate (BER) calculation with and without optical fiber.
+*   `egalizateur.m`: Equalizer implementation.
+*   `fiber.m`, `fiber_PMDCF.m`, `fiber_o.m`: Optical fiber models.
+*   `make_emlaser.m`, `make_laser_simple.m`, `make_photodetector.m`: Functions to model lasers and photodetectors.
+*   `model.m`, `model_band_O.m`, `model_equalizer.m`: Optical system models.
+*   `RX_photodetector.m`, `TX_optical_dml.m`, `TX_optical_eml.m`: Optical receiver and transmitter models.
+*   `D3.pdf`: A PDF document that may contain explanations or results related to this module.
 
 ### `D4`
 
-Ce répertoire contient des scripts pour l'analyse de performance, notamment :
+This directory contains scripts for performance analysis, including:
 
-*   `d4_perfs_students.m`, `rejection_per_debits.m` : Scripts pour évaluer les performances en fonction des débits.
-*   `D4.pdf` : Un document PDF qui pourrait contenir des explications ou des résultats liés à ce module.
+*   `d4_perfs_students.m`, `rejection_per_debits.m`: Scripts to evaluate performance based on data rates.
+*   `D4.pdf`: A PDF document that may contain explanations or results related to this module.
 
 ### `ref`
 
-Ce répertoire contient des références ou des exemples, comme le sous-répertoire `git-homework` avec des scripts MATLAB pour le calcul et l'affichage de l'ensemble de Mandelbrot (`mandelbrot_calc.m`, `mandelbrot_display.m`).
+This directory contains references or examples, such as the `git-homework` subdirectory with MATLAB scripts for calculating and displaying the Mandelbrot set (`mandelbrot_calc.m`, `mandelbrot_display.m`).
 
-## Utilisation
+## Usage
 
-Pour utiliser les scripts, naviguez dans le répertoire du module souhaité et exécutez les fichiers `.m` correspondants dans un environnement MATLAB. Les fichiers PDF (`D3.pdf`, `D4.pdf`) peuvent fournir des informations supplémentaires sur les objectifs et les résultats des simulations.
+To use the scripts, navigate to the desired module directory and run the corresponding `.m` files in a MATLAB environment. PDF files (`D3.pdf`, `D4.pdf`) may provide additional information on the objectives and results of the simulations.
 
 ## Contribution
 
-Les contributions sont les bienvenues. Veuillez suivre les pratiques de codage établies et soumettre des pull requests pour toute amélioration ou correction de bug.
+Contributions are welcome. Please follow established coding practices and submit pull requests for any improvements or bug fixes.
 
-## Licence
+## License
 
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails (si présent).
+This project is licensed under the MIT License. See the `LICENSE` file for more details (if present).
 
