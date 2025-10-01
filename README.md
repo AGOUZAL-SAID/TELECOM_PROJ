@@ -4,7 +4,7 @@ This repository contains a set of projects and simulations related to telecommun
 
 ## Repository Structure
 
-The repository is organized into several directories, each corresponding to a specific part of the project or a study module.
+The repository is organized into several directories, each corresponding to a specific part of the project.
 
 ### `D1`
 
@@ -16,15 +16,16 @@ This directory contains MATLAB scripts for basic signal processing and communica
 *   `matched_filter.m`: Matched filter implementation.
 *   `QAM_mod.m`, `QAM_demod.m`: QAM modulation and demodulation functions.
 *   `signal_gen.m`: Various signal generation.
+*   `D1.pdf`: A PDF document that contain explanations or results related to this module.
 
 ### `D2`
 
-This directory is dedicated to channel modeling and performance analysis. It includes:
+This directory is dedicated to channel modeling and performance analysis of RF communication. It includes:
 
-*   **`subblocks/channelModel/QuaDriGa_2019.06.27_v2.2.0`**: Integration of the QuaDRiGa channel model, a radio channel simulator for wireless communication systems. This subdirectory contains scripts for configuration, track generation, and tutorials for using QuaDRiGa.
     *   `quadriga_src`: The QuaDRiGa source code, with channel configurations (`config/*.conf`) and tutorial scripts (`tutorials/*.m`).
 *   **`subblocks/signal_analysis_and_performance_function`**: Scripts for spectral analysis and performance estimation.
     *   `perf_estim.m`, `plot_spectrum.m`, `simple_plot_spectrum.m`, `simple_raw_spectrum.m`.
+    *   `D2.pdf`: A PDF document that contain explanations or results related to this module.
 
 ### `D3`
 
@@ -36,14 +37,14 @@ This module focuses on optical communication systems, with simulations of optica
 *   `make_emlaser.m`, `make_laser_simple.m`, `make_photodetector.m`: Functions to model lasers and photodetectors.
 *   `model.m`, `model_band_O.m`, `model_equalizer.m`: Optical system models.
 *   `RX_photodetector.m`, `TX_optical_dml.m`, `TX_optical_eml.m`: Optical receiver and transmitter models.
-*   `D3.pdf`: A PDF document that may contain explanations or results related to this module.
+*   `D3.pdf`: A PDF document that contain explanations or results related to this module.
 
 ### `D4`
 
-This directory contains scripts for performance analysis, including:
+This directory contains scripts for performance of emmission using different bit rate and different modulation, including:
 
 *   `d4_perfs_students.m`, `rejection_per_debits.m`: Scripts to evaluate performance based on data rates.
-*   `D4.pdf`: A PDF document that may contain explanations or results related to this module.
+*   `D4.pdf`: A PDF document that contain explanations or results related to this module.
 
 ### `ref`
 
@@ -52,12 +53,3 @@ This directory contains references or examples, such as the `git-homework` subdi
 ## Usage
 
 To use the scripts, navigate to the desired module directory and run the corresponding `.m` files in a MATLAB environment. PDF files (`D3.pdf`, `D4.pdf`) may provide additional information on the objectives and results of the simulations.
-
-## Contribution
-
-Contributions are welcome. Please follow established coding practices and submit pull requests for any improvements or bug fixes.
-
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for more details (if present).
-
